@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Дни — Дневник питания{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Дни</h2>
+    {% if days %}
+    <table>
+        <thead>
+        <tr>
+            <th>Дата</th>
+            <th class="num">Ккал</th>
+            <th class="num">Б, г</th>
+            <th class="num">Ж, г</th>
+            <th class="num">У, г</th>
+            {% if goal and goal.kcal > 0 %}<th class="num">% цели</th>{% endif %}
+            <th class="num">Заметок</th>
+            <th class="num">Сообщений</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in days %}
+        <tr>
+            <td>
+                <a href="/day/{{ row.day }}{% if selected_user_id %}?user_id={{ selected_user_id }}{% endif %}">
+                    {{ row.day }}
+                </a>
+            </td>
+            <td class="num">{{ '%.0f'|format(row.kcal) }}</td>
+            <td class="num">{{ '%.1f'|format(row.protein_g) }}</td>
+            <td class="num">{{ '%.1f'|format(row.fat_g) }}</td>
+            <td class="num">{{ '%.1f'|format(row.carbs_g) }}</td>
+            {% if goal and goal.kcal > 0 %}
+            {% set percent = row.kcal / goal.kcal * 100 %}
+            <td class="num" {% if percent > 105 %}style="color:#dc2626"{% endif %}>
+                {{ '%.0f'|format(percent) }}%
+            </td>
+            {% endif %}
+            <td class="num">{{ row.notes_count }}</td>
+            <td class="num">{{ row.messages_count }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Пока нет данных — напиши что-нибудь боту.</p>
+    {% endif %}
+</div>
+{% endblock %}

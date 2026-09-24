@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Дневник питания{% endblock %}</title>
+    <style>
+        :root { color-scheme: light dark; }
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0; padding: 24px; line-height: 1.5;
+            background: #f6f7f9; color: #1c1e21;
+        }
+        .wrap { max-width: 980px; margin: 0 auto; }
+        h1 { font-size: 22px; margin: 0 0 16px; }
+        h2 { font-size: 17px; margin: 24px 0 8px; }
+        a { color: #2563eb; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .card { background: #fff; border: 1px solid #e3e5e8; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #eceef0; font-size: 14px; }
+        th { font-weight: 600; color: #5b6068; background: #fafbfc; }
+        tr:hover td { background: #f8fafc; }
+        .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 12px; }
+        .muted { color: #6b7280; font-size: 13px; }
+        .totals { display: flex; gap: 24px; flex-wrap: wrap; }
+        .totals div span { display: block; font-size: 20px; font-weight: 600; }
+        .empty { color: #6b7280; font-style: italic; }
+        select, button, input { font-size: 14px; padding: 6px 9px; border-radius: 6px; border: 1px solid #d0d3d8; }
+        input { width: 100%; box-sizing: border-box; }
+        button.primary { background: #2563eb; color: #fff; border-color: #2563eb; cursor: pointer; width: 100%; }
+        button.link { background: none; border: none; color: #2563eb; cursor: pointer; padding: 0; width: auto; }
+        .error { color: #b91c1c; background: #fee2e2; padding: 8px 10px; border-radius: 6px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+        .progress-row { margin: 10px 0 14px; }
+        .progress-head { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; margin-bottom: 4px; }
+        .progress-track { height: 8px; background: #e8eaee; border-radius: 999px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #2563eb; border-radius: 999px; }
+        .progress-fill.over { background: #dc2626; }
+        @media (prefers-color-scheme: dark) {
+            body { background: #16181c; color: #e6e8eb; }
+            .card { background: #1f2226; border-color: #2c3036; }
+            th { background: #24272c; color: #9aa1ab; }
+            th, td { border-bottom-color: #2c3036; }
+            tr:hover td { background: #24272c; }
+            .tag { background: #26304d; color: #b9c6ff; }
+            select, button, input { background: #24272c; color: #e6e8eb; border-color: #3a3f46; }
+            button.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+            button.link { background: none; }
+            .error { color: #fecaca; background: #4c1d1d; }
+            code { background: #2c3036; }
+            .progress-track { background: #2c3036; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="topbar">
+        <h1><a href="/{% if selected_user_id %}?user_id={{ selected_user_id }}{% endif %}">🍎 Дневник питания и активностей</a></h1>
+        {% if account %}
+        <form method="post" action="/logout">
+            <span class="muted">
+                {{ account.login }}{% if account.is_admin %} · главный аккаунт{% endif %}
+            </span>
+            <button type="submit" class="link">выйти</button>
+        </form>
+        {% endif %}
+    </div>
+    {% if users and account and account.is_admin %}
+    <form class="card" method="get" action="{{ request.url.path }}">
+        <label for="user_id">Пользователь:</label>
+        <select id="user_id" name="user_id" onchange="this.form.submit()">
+            <option value="">— все —</option>
+            {% for user in users %}
+            <option value="{{ user.user_id }}" {% if selected_user_id == user.user_id %}selected{% endif %}>
+                {{ user.full_name or user.username or user.user_id }}
+            </option>
+            {% endfor %}
+        </select>
+        <noscript><button type="submit">Показать</button></noscript>
+    </form>
+    {% endif %}
+    {% block content %}{% endblock %}
+</div>
+</body>
+</html>

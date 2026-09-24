@@ -1,0 +1,21 @@
+# секреты
+.env
+.env.*
+!.env.example
+service_account*.json
+*.pem
+*.key
+# окружения и кэш
+venv/
+.venv*/
+__pycache__/
+*.pyc
+# данные и логи
+*.db
+*.db-*
+*.sqlite3
+*.log
+data/
+backups/
+.DS_Store
+.vscode/

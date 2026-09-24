@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ day }} — Дневник питания{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>{{ day }}</h2>
+    <div class="totals">
+        <div>Калории <span>{{ '%.0f'|format(totals.kcal) }}</span></div>
+        <div>Белки <span>{{ '%.1f'|format(totals.protein_g) }} г</span></div>
+        <div>Жиры <span>{{ '%.1f'|format(totals.fat_g) }} г</span></div>
+        <div>Углеводы <span>{{ '%.1f'|format(totals.carbs_g) }} г</span></div>
+        <div>Приёмов пищи <span>{{ totals.meals_count }}</span></div>
+    </div>
+
+    {% if goal %}
+    <h2>Прогресс к цели</h2>
+    {% for title, done, target, unit in [
+        ('Калории', totals.kcal, goal.kcal, 'ккал'),
+        ('Белки', totals.protein_g, goal.protein_g, 'г'),
+        ('Жиры', totals.fat_g, goal.fat_g, 'г'),
+        ('Углеводы', totals.carbs_g, goal.carbs_g, 'г')] %}
+        {% set percent = (done / target * 100) if target > 0 else 0 %}
+        <div class="progress-row">
+            <div class="progress-head">
+                <span>{{ title }}</span>
+                <span class="muted">
+                    {{ '%.0f'|format(done) }} / {{ '%.0f'|format(target) }} {{ unit }}
+                    {%- if target > 0 %}
+                        {% if done <= target %}
+                            · осталось {{ '%.0f'|format(target - done) }}
+                        {% else %}
+                            · перебор на {{ '%.0f'|format(done - target) }}
+                        {% endif %}
+                    {%- endif %}
+                </span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill {% if percent > 100 %}over{% endif %}"
+                     style="width: {{ [percent, 100]|min }}%"></div>
+            </div>
+        </div>
+    {% endfor %}
+    {% else %}
+    <p class="muted">Цель не задана. Установить можно в боте: <code>/goal 2000 150 60 200</code></p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Приёмы пищи</h2>
+    {% if meals %}
+    <table>
+        <thead>
+        <tr><th>Время</th><th>Блюдо</th><th class="num">Ккал</th><th class="num">Б</th><th class="num">Ж</th><th class="num">У</th></tr>
+        </thead>
+        <tbody>
+        {% for meal in meals %}
+        <tr>
+            <td>{{ meal.created_at[11:16] }}</td>
+            <td>
+                {{ meal.description or '—' }}
+                {% if meal.source == 'llm' %}<span class="tag" title="Оценка нейросети, не точные данные">≈ оценка</span>{% endif %}
+            </td>
+            <td class="num">{{ '%.0f'|format(meal.kcal) }}</td>
+            <td class="num">{{ '%.1f'|format(meal.protein_g) }}</td>
+            <td class="num">{{ '%.1f'|format(meal.fat_g) }}</td>
+            <td class="num">{{ '%.1f'|format(meal.carbs_g) }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}<p class="empty">За этот день записей о питании нет.</p>{% endif %}
+</div>
+
+<div class="card">
+    <h2>Заметки</h2>
+    {% if notes %}
+    <table>
+        <thead><tr><th>Время</th><th>Категория</th><th>Суть</th><th>Оригинал</th></tr></thead>
+        <tbody>
+        {% for note in notes %}
+        <tr>
+            <td>{{ note.created_at[11:16] }}</td>
+            <td><span class="tag">{{ note.category }}</span></td>
+            <td>{{ note.summary or '—' }}</td>
+            <td class="muted">{{ note.text }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}<p class="empty">Заметок нет.</p>{% endif %}
+</div>
+
+<div class="card">
+    <h2>Все сообщения</h2>
+    {% if messages %}
+    <table>
+        <thead><tr><th>Время</th><th>Тип</th><th>Текст</th></tr></thead>
+        <tbody>
+        {% for item in messages %}
+        <tr>
+            <td>{{ item.created_at[11:16] }}</td>
+            <td class="muted">{{ item.kind }}</td>
+            <td>{{ item.text }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}<p class="empty">Сообщений нет.</p>{% endif %}
+</div>
+
+<p><a href="/{% if selected_user_id %}?user_id={{ selected_user_id }}{% endif %}">← ко всем дням</a></p>
+{% endblock %}
